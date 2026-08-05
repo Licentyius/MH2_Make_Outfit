@@ -8,21 +8,23 @@ Integrated/official plugin example in mh2_official_tools(folder structure map):
   
 # Folder Structure for the integrated plugins for makehuman 2:  
   
-makehuman2/  
-├── pyproject.toml  
-├── extensions/                    <-- (Leave empty for community drop-ins)  
-└── mh2_official_tools/            <-- Core plugin package  
-        ├── __init__.py            <-- Main gateway entry point  
-        ├── small tool_alpha.py  
-        ├── small tool_beta.py  
-        └── Large_cool_tool/        <-- Multi-file tool subfolder  
-            ├── __init__.py         <-- Sub-tool entry point  
-            ├── tool_alpha.py  
-            ├── manifest.toml  
-            ├── data/  
-            │   └── resource.json  
-            └── core/  
-                └── functional.py  
+```text
+makehuman2/
+├── pyproject.toml
+├── extensions/              <-- (Leave empty for community drop-ins)
+└── mh2_official_tools/      <-- Core plugin package
+    ├── __init__.py          <-- Main gateway entry point
+    ├── tool_alpha.py
+    ├── tool_beta.py
+    └── Large_cool_tool/     <-- Multi-file tool subfolder
+        ├── __init__.py      <-- Sub-tool entry point
+        ├── tool_alpha.py
+        ├── manifest.toml
+        ├── data/
+        │   └── resource.json
+        └── core/
+            └── functional.py
+```
   
   
 .json saved outfit presets can be saved, exported and shared. The presets load onto the screen with a double click.  
