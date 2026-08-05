@@ -1,0 +1,14 @@
+[extension]
+id = "make_outfit"
+name = "Studio Outfit Sets"
+version = "2.0.0"
+author = "Elvaerwyn_MH2"
+description = "Saves and loads complete character clothing ensembles with simple clicks."
+
+[runtime]
+package_dirs = ["."]
+sys_paths = ["."]
+
+[project.entry-points]
+# Points cleanly to the folder's root initialization hook
+make_outfit = "mh2_official_tools.make_outfit:initialize_extension"

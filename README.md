@@ -1,5 +1,7 @@
 # MH2_Make_Outfit
 
+<img src="reference/outfit_saving.png" alt="Demo Image" width="500"> 
+
 MH2 Official Integrated Style Plugin- Make Outfit.  This is the first of the official integrated  plugins to be available for testing purposes.  
 This is an evolving plugin for simply saving outfits in a wardrobe style way.  
   
@@ -33,6 +35,7 @@ makehuman2/
 First open up makehuman 2, then pull down the community plugins menu in mh2(settings-community plugins), you should see the plugin panel open up to  
 allow any installed extensions and plugins to be used. Enable the plugin. At present this should open it right up as a fully dockable window of its own.  
 
+The folder name for this to operate is make_outfit(needs to be exactly this!).
 
 
 
