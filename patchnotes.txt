@@ -1,0 +1,43 @@
+Changes for the endpoint is plugin-release, library
+
+* glob.env.normalizeName now contains the logic for compatible filenames (allows + and = as well)
+	"".join([c for c in path.lower() if c.isalnum() or c in ("+", "_", "-", "=")])
+	(your logic moved in there)
+
+* baseobj.addAndDisplayAsset display asset get two additional parameters to deal with
+	materials (similar to addAsset.
+
+* gui/plugin_panel.py needs a new mechanism for official plugins to unload
+
+
+Changes for plugin itself
+
+* changed path to data/outfit_presets/<mesh> to allow outfits for different meshes
+  (fits to the rest). If you have stuff which is mesh dependent, use the same concept.
+  non-mesh depending folders like themes or studio_notebooks do not need subfolders.
+
+* changed JSON syntax to support different materials, dictionary in dictionary.
+  filename and optional material parameter.
+
+* uses new Panel logic, so does not need the globals
+
+* all documented attributes like baseClass do not need an hasattr().
+	I usually declare and preset these values
+
+* uses detachAssetByName and addAndDisplayAsset for deleting or adding assets
+	addAndDisplayAsset changed to accept materials (see above)
+	no mocks needed (the functions are new and resulted from experience in Wawota)
+	(did a lot of comments to explain how it is done for other programmers as well)
+
+* uses glov.env.readJSON and glob.env.writeJSON, they come with errorhandling and when verbose bit 3
+  is set, one can see, when the files are loaded in logfile.
+  (e.g. scan_outfits_folder presented a "common error", but one would not find out which file is corrupt)
+
+* uses ErrorBox from gui/common instead of  print functions (print will not really work for steam)
+  (also fixed IconButton)
+
+* uses glob.env.normalizeName (see above)
+
+
+Not yet solved:
+	change of the baseClass when menu is there.
