@@ -24,12 +24,29 @@ class OutfitPlugin(QWidget):
         self.repo = self.glob.pluginRepo
         self.env = self.glob.env
         self.baseclass = self.glob.baseClass
+        self.lastBaseclass = self.baseclass
 
-        # TODO checked when base is changed
-        self.outfits_dir = os.path.normpath(os.path.join(self.env.stdUserPath(), "outfit_presets", self.env.basename)).replace("\\", "/")
+        self.setOutfitsDir()
+
         self.scanned_outfits = {}
         self.dock = None
         self.panel = None
+
+    def setOutfitsDir(self):
+        self.outfits_dir = os.path.normpath(os.path.join(self.env.stdUserPath(), "outfit_presets", self.env.basename)).replace("\\", "/")
+
+    def newBaseClass(self):
+        self.baseclass = self.glob.baseClass
+        if self.lastBaseclass != self.baseclass:
+            self.setOutfitsDir()
+            self.scan_outfits_folder()
+            self.lastBaseclass = self.baseclass
+            return True
+        return False
+
+    def newBaseClassMessage(self):
+        QMessageBox.warning(self.mainwindow, "Base class changed", "The base class was changed in between. List is refreshed.")
+        return
 
     class Panel(QWidget):
         def __init__(self, parent, glob):
@@ -104,7 +121,7 @@ class OutfitPlugin(QWidget):
             row2 = QHBoxLayout()
         
             refresh_btn = QPushButton("🔄 Refresh List")
-            refresh_btn.clicked.connect(parent.scan_outfits_folder)
+            refresh_btn.clicked.connect(parent.scan_outfits_basefolder)
             row1.addWidget(refresh_btn)
 
             save_btn = QPushButton("💾 Save Current Outfit")
@@ -123,9 +140,16 @@ class OutfitPlugin(QWidget):
             btn_layout.addLayout(row2)
             layout.addLayout(btn_layout)
 
+    def scan_outfits_basefolder(self):
+        if not self.newBaseClass():
+            self.scan_outfits_folder()
+
     def scan_outfits_folder(self):
         self.outfit_list.clear()
         self.scanned_outfits.clear()
+
+        # test if baseclass changed
+        #
         self.metadata_display.setHtml("<i style='color:#888888;'>Click a saved outfit preset below to review details...</i>")
         
         if not os.path.exists(self.outfits_dir):
@@ -195,6 +219,9 @@ class OutfitPlugin(QWidget):
         collect assets to delete, a copy is needed, since attachedAssets changes
         when detachAssetByName is called. The delete them in a loop
         """
+
+        self.newBaseClass()
+
         filenames = []
         for elem in self.baseclass.attachedAssets:
             if elem.type != "eyes":
@@ -208,8 +235,12 @@ class OutfitPlugin(QWidget):
         """
         loads assets from a json list
         """
+        if self.newBaseClass():
+            self.newBaseClassMessage()
+            return
+
         if not item: 
-            QMessageBox.warning(self, "Selection Required", "Please click on a saved outfit set from the menu first.")
+            QMessageBox.warning(self.mainwindow, "Selection Required", "Please click on a saved outfit set from the menu first.")
             return
         outfit_name = item.data(Qt.UserRole)
         config = self.scanned_outfits.get(outfit_name)
@@ -251,10 +282,12 @@ class OutfitPlugin(QWidget):
 
 
     def capture_current_outfit(self):
+        self.newBaseClass()
+
         attached_assets_list = self.baseclass.attachedAssets
 
         if not hasattr(self.mainwindow, 'equipment') or not self.mainwindow.equipment:
-            QMessageBox.warning(self, "No Items Equipped", "The character currently has no equipment structure initialized.")
+            QMessageBox.warning(self.mainwindow, "No Items Equipped", "The character currently has no equipment structure initialized.")
             return
 
         form_dialog = QDialog(self)
@@ -302,7 +335,7 @@ class OutfitPlugin(QWidget):
 
         if os.path.isfile(target_file_path):
             confirm_overwrite = QMessageBox.question(
-                self, "Outfit Profile Exists", f"An outfit set named '{outfit_name}' already exists.\n\nOverwrite it?",
+                self.mainwindow, "Outfit Profile Exists", f"An outfit set named '{outfit_name}' already exists.\n\nOverwrite it?",
                 QMessageBox.Yes | QMessageBox.No
             )
             if confirm_overwrite == QMessageBox.No: 
@@ -336,7 +369,7 @@ class OutfitPlugin(QWidget):
             captured_assets_dictionary[f"item_{slotindex}"] = entry
 
         if len(captured_assets_dictionary) < 1:
-            QMessageBox.warning(self, "Extraction Error", "Could not locate any active assets inside the master attachedAssets list layer.")
+            QMessageBox.warning(self.mainwindow, "Extraction Error", "Could not locate any active assets inside the master attachedAssets list layer.")
             return
 
         outfit_profile_payload = {
@@ -359,19 +392,23 @@ class OutfitPlugin(QWidget):
         thumbnail_path = os.path.join(self.outfits_dir, f"{clean_filename}.png").replace("\\", "/")
         self.generate_outfit_thumbnail(thumbnail_path)
         self.scan_outfits_folder()
-        QMessageBox.information(self, "Outfit Saved!", f"Successfully captured outfit '{outfit_name}'!")
+        QMessageBox.information(self.mainwindow, "Outfit Saved!", f"Successfully captured outfit '{outfit_name}'!")
 
     def rename_selected_outfit(self):
+        if self.newBaseClass():
+            self.newBaseClassMessage()
+            return
+
         current_item = self.outfit_list.currentItem()
         if not current_item:
-            QMessageBox.warning(self, "Selection Required", "Please choose an outfit template from the array list view above to rename.")
+            QMessageBox.warning(self.mainwindow, "Selection Required", "Please choose an outfit template from the array list view above to rename.")
             return
             
         old_outfit_name = current_item.data(Qt.UserRole)
         old_clean_filename = self.env.normalizeName(old_outfit_name)
         
         new_outfit_name, confirmed = QInputDialog.getText(
-            self, "Rename Outfit Profile", f"Provide a replacement title label for '{old_outfit_name}':", text=old_outfit_name
+            self.mainwindow, "Rename Outfit Profile", f"Provide a replacement title label for '{old_outfit_name}':", text=old_outfit_name
         )
         if not confirmed or not new_outfit_name.strip() or new_outfit_name.strip() == old_outfit_name:
             return
@@ -384,7 +421,7 @@ class OutfitPlugin(QWidget):
         new_png_path = os.path.join(self.outfits_dir, f"{new_clean_filename}.png").replace("\\", "/")
 
         if os.path.exists(new_json_path):
-            QMessageBox.critical(self, "Naming Conflict", "An outfit profile with that computed target file path already exists.")
+            QMessageBox.critical(self.mainwindow, "Naming Conflict", "An outfit profile with that computed target file path already exists.")
             return
 
         # no file return
@@ -415,9 +452,11 @@ class OutfitPlugin(QWidget):
 
     def capture_manual_thumbnail(self):
         """ Captures a viewport screenshot and instantly refreshes the preset grid display icons """
+        self.newBaseClass()
+
         selected_items = self.outfit_list.selectedItems()
         if not selected_items: 
-            QMessageBox.warning(self, "Selection Required", "Please click on a saved outfit set from the grid menu first to apply the snapshot thumbnail.")
+            QMessageBox.warning(self.mainwindow, "Selection Required", "Please click on a saved outfit set from the grid menu first to apply the snapshot thumbnail.")
             return
             
         outfit_name = selected_items[0].data(Qt.UserRole)
@@ -448,12 +487,15 @@ class OutfitPlugin(QWidget):
             ErrorBox(self.glob.centralWidget, f"⚠️ Viewport screenshot failed: {system_rendering_fault}")
 
     def delete_selected_outfit(self):
+        if self.newBaseClass():
+            self.newBaseClassMessage()
+            return
         current_item = self.outfit_list.currentItem()
         if not current_item: return
         outfit_name = current_item.data(Qt.UserRole)
         if not outfit_name: return
         confirm_delete = QMessageBox.question(
-            self, "Confirm Delete", f"Permanently delete outfit preset '{outfit_name}'?", QMessageBox.Yes | QMessageBox.No
+            self.mainwindow, "Confirm Delete", f"Permanently delete outfit preset '{outfit_name}'?", QMessageBox.Yes | QMessageBox.No
         )
         if confirm_delete == QMessageBox.No: 
             return

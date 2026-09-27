@@ -38,6 +38,6 @@ Changes for plugin itself
 
 * uses glob.env.normalizeName (see above)
 
+* change of the baseClass is now longer creating errors
 
-Not yet solved:
-	change of the baseClass when menu is there.
+* message and dialog boxes now are related to mainwindow (to avoid them to be 'somewhere')
