@@ -254,6 +254,7 @@ class OutfitPlugin(QWidget):
 
         # all assets are in glob.cachedInfo as a class loadEquipment
         # the asset can be determined by getAssetByFilename
+        # filenames need to be URL encoded (no os.path.join, just use "/")
         #
         for slot in saved_wardrobe_slots.values():
             if "filename" not in slot:
@@ -263,8 +264,8 @@ class OutfitPlugin(QWidget):
 
             # prepend user and system datapath and check if the asset is known
             #
-            sysasset = os.path.join(self.env.path_sysdata, path)
-            userasset = os.path.join(self.env.path_userdata, path)
+            sysasset = self.env.path_sysdata + "/" + path
+            userasset = self.env.path_userdata + "/" + path
             elem = self.glob.getAssetByFilename(sysasset)
             if elem is None:
                 elem = self.glob.getAssetByFilename(userasset)
@@ -274,7 +275,7 @@ class OutfitPlugin(QWidget):
                     # materialpath is the asset path + materialname if given
                     #
                     if material is not None:
-                        matpath = os.path.join(os.path.dirname(elem.path), material)
+                        matpath = os.path.dirname(elem.path) + "/" + material
                     else:
                         matpath = None
                     multi = (elem.folder == "clothes")
@@ -329,7 +330,7 @@ class OutfitPlugin(QWidget):
             return
 
         outfit_name = txt_name.text().strip()
-        clean_filename = self.env.normalizeName(outfit_name)
+        clean_filename = self.env.normalizeName(outfit_name, lower=False)
 
         target_file_path = os.path.join(self.outfits_dir, f"{clean_filename}.json").replace("\\", "/")
 
@@ -405,7 +406,7 @@ class OutfitPlugin(QWidget):
             return
             
         old_outfit_name = current_item.data(Qt.UserRole)
-        old_clean_filename = self.env.normalizeName(old_outfit_name)
+        old_clean_filename = self.env.normalizeName(old_outfit_name, lower=False)
         
         new_outfit_name, confirmed = QInputDialog.getText(
             self.mainwindow, "Rename Outfit Profile", f"Provide a replacement title label for '{old_outfit_name}':", text=old_outfit_name
@@ -413,7 +414,7 @@ class OutfitPlugin(QWidget):
         if not confirmed or not new_outfit_name.strip() or new_outfit_name.strip() == old_outfit_name:
             return
             
-        new_clean_filename = self.env.normalizeName(new_outfit_name)
+        new_clean_filename = self.env.normalizeName(new_outfit_name, lower=False)
 
         old_json_path = os.path.join(self.outfits_dir, f"{old_clean_filename}.json").replace("\\", "/")
         new_json_path = os.path.join(self.outfits_dir, f"{new_clean_filename}.json").replace("\\", "/")
@@ -460,7 +461,7 @@ class OutfitPlugin(QWidget):
             return
             
         outfit_name = selected_items[0].data(Qt.UserRole)
-        clean_filename = self.env.normalizeName(outfit_name)
+        clean_filename = self.env.normalizeName(outfit_name, lower=False)
         thumbnail_path = os.path.join(self.outfits_dir, f"{clean_filename}.png").replace("\\", "/")
         
         # Execute viewport image rendering pass
@@ -500,7 +501,7 @@ class OutfitPlugin(QWidget):
         if confirm_delete == QMessageBox.No: 
             return
             
-        clean_filename = self.env.normalizeName(outfit_name)
+        clean_filename = self.env.normalizeName(outfit_name, lower=False)
         
         target_file_path = os.path.join(self.outfits_dir, f"{clean_filename}.json").replace("\\", "/")
 

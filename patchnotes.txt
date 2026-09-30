@@ -1,3 +1,48 @@
+A short remark about filenames
+
+Linux:
+
+* is case dependent
+* use ASCII only to avoid problems
+* forbidden: /, Null
+
+Windows:
+
+* is case independent
+* use ASCII only to avoid problems
+* forbidden: < > : " / \ | ? * (ascii 0-31)
+
+Conclusion:
+the forbidden letters are the one from windows
+internal representation: lowercase, URL path representation ("/")
+
+"normalization":
+        difference case dependent vs. case independent will stay (Linux/Windows)
+        separator is "/"
+
+length is not considered component is 255 and max-path length on linux
+is 4096 bytes (windows 32k)
+
+IMPORTANT
+* the internal reposity (dbcache) contains URL names only.
+* reload this cache (-r) at least once for a mesh
+
+Changes:
+
+* normalizeName in core/globenv has an option not to lower a name
+        (used for renaming of file names)
+* path_sysdata, path_userdata are normalized internally
+* cacheRepoEntry needs a parameter more (self.env) to decide if Windows or Linux
+* cacheRepoEntry pathes are normalized now
+
+* material now returns normed path names
+(opengl/material.py, core/attached_asset.py and obj3d/object3d.py)
+
+Finding files works with getAttachedByFileName now lowering asset name
+only for windows
+
+--------------------------------------------------------------------------------------------
+
 Changes for the endpoint is plugin-release, library
 
 * glob.env.normalizeName now contains the logic for compatible filenames (allows + and = as well)
