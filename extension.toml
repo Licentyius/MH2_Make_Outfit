@@ -11,4 +11,4 @@ sys_paths = ["."]
 
 [project.entry-points]
 # Points cleanly to the folder's root initialization hook
-make_outfit = "mh2_official_tools.make_outfit:initialize_extension"
+make_outfit = "mh2_official_tools.make_outfit"
